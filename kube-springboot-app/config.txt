@@ -1,0 +1,84 @@
+Déployer une application Spring Boot sur Kubernetes
+Kubernetes est une plateforme puissante pour orchestrer et gérer des conteneurs, idéale pour les développeurs Java utilisant Spring Boot. Voici un aperçu des étapes essentielles pour déployer une application Spring Boot sur Kubernetes :
+
+1. Conteneuriser l'application Spring Boot
+
+Créer un fichier Dockerfile : Ce fichier décrit comment construire une image Docker pour votre application.FROM openjdk:17-jdk-slim
+VOLUME /tmp
+ARG JAR_FILE=target/myapp.jar
+COPY ${JAR_FILE} app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+
+Construire l'image Docker :docker build -t myapp:1.0 .
+
+
+
+
+2. Configurer Kubernetes
+
+
+Créer un fichier YAML pour le déploiement :
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: spring-boot-app
+  template:
+    metadata:
+      labels:
+        app: spring-boot-app
+    spec:
+      containers:
+      - name: spring-boot-container
+        image: myapp:1.0
+        ports:
+        - containerPort: 8080
+
+
+
+Créer un service pour exposer l'application :
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-service
+spec:
+  selector:
+    app: spring-boot-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+
+
+
+
+3. Déployer sur Kubernetes
+
+
+Appliquer les fichiers YAML :
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+
+
+Vérifier les ressources déployées :
+kubectl get pods
+kubectl get services
+
+
+
+
+4. Meilleures pratiques
+
+Surveiller et journaliser : Utilisez kubectl logs pour consulter les journaux des pods.
+Scalabilité : Ajustez le nombre de réplicas dans le fichier YAML pour gérer la charge.
+Configuration externe : Utilisez ConfigMaps et Secrets pour gérer les paramètres de configuration sensibles.
+
+
+Avec ces étapes, vous pouvez déployer et gérer efficacement une application Spring Boot sur Kubernetes. Si vous utilisez un fournisseur cloud comme Azure, AWS ou Google Cloud, ils offrent des outils supplémentaires pour simplifier le processus.
